@@ -130,6 +130,7 @@ def pullback_counit :
   (Δ_ Q.p).obj ((Π_ Q.p).obj (.mk <| pullback.snd P.o Q.i)) ⟶
     (.mk <| pullback.snd P.o Q.i) := adj.counit.app _
 
+-- MK : Will golf all that later - keeping notation from the paper for now
 abbrev t := P.o
 
 abbrev u := Q.i
@@ -168,10 +169,10 @@ def sq_III_comm : (m P Q) ≫ (f P) = (r P Q) ≫ (h P Q) := pullback.condition
 
 def ε : D' P Q ⟶ A' P Q  := (ε' P Q).left
 
-def N : C  := pullback (r P Q) (ε P Q)
+def N : C := pullback (r P Q) (ε P Q)
 
 --need to exploit how Δ f is defined
-def q  : D' P Q ⟶ (w P Q).left := (pullback.fst (P.w Q).hom Q.p)
+def q : D' P Q ⟶ (w P Q).left := (pullback.fst (P.w Q).hom Q.p)
 
 /-- This is `p` in the diagram. -/
 abbrev p' : N P Q ⟶ D' P Q := by {apply pullback.snd}
@@ -186,8 +187,8 @@ instance : CartesianExponentiable (P.p' Q) := sorry
 
 /-- Functor composition for polynomial functors in the diagrammatic order. -/
 def comp (P : MvPoly I J) (Q : MvPoly J K) : MvPoly I K where
-  E := pullback (r P Q) (ε P Q) -- N
-  B := (P.w Q).left --M
+  E := pullback (r P Q) (ε P Q)
+  B := (P.w Q).left
   i := n P Q ≫ m P Q ≫ P.i
   p := p' P Q ≫ q P Q
   exp := CartesianExponentiable.comp (P.p' Q) (P.q Q)
@@ -196,27 +197,23 @@ def comp (P : MvPoly I J) (Q : MvPoly J K) : MvPoly I K where
 def v := Q.o
 
 def BCIso (hA' : IsPullback (P.k Q) (P.h Q) Q.u P.t) :
-IsIso (pullbackBeckChevalleyNatTrans (P.k Q) Q.u (P.h Q) P.t ((sq_I_comm P Q).symm))
-  := pullbackBeckChevalleyNatTrans_of_IsPullback_is_iso (P.k Q) (Q.u) (P.h Q) (P.t) hA'
+    IsIso (pullbackBeckChevalleyNatTrans (P.k Q) Q.u (P.h Q) P.t (pullback.condition).symm) :=
+  pullbackBeckChevalleyNatTrans_of_IsPullback_is_iso (P.k Q) (Q.u) (P.h Q) (P.t) hA'
 
 /-- Δ_ h ⋙ Σ_ k ≅ Σ_ t ⋙ Δ_ u -/
 def first_BCh_iso (hA' : IsPullback (P.k Q) (P.h Q) Q.u P.t) :
     Δ_ P.h Q ⋙ Σ_ P.k Q ≅ Σ_ P.o ⋙ Δ_ Q.i where
-  hom := pullbackBeckChevalleyNatTrans (P.k Q) (Q.u) (P.h Q) (P.t) ((sq_I_comm P Q).symm)
+  hom := pullbackBeckChevalleyNatTrans (P.k Q) (Q.u) (P.h Q) (P.t) (pullback.condition).symm
   inv := Classical.choose ((BCIso P Q hA').out)
   hom_inv_id := (Classical.choose_spec (BCIso P Q hA').out).left
   inv_hom_id := (Classical.choose_spec (BCIso P Q hA').out).right
 
 def s := P.i
 
-/--Σv Πg ∆u Σt Πf ∆s ≅ Σv Πg Σk ∆h Πf ∆s-/
 def first_step_BCh_iso (hA' : IsPullback (P.k Q) (P.h Q) Q.u P.t) :
-  Δ_ P.i ⋙ Π_ P.p ⋙ (Σ_ P.o ⋙ Δ_ Q.i) ⋙ Π_ Q.p ⋙ Σ_ Q.o
-  ≅ Δ_ P.i ⋙ Π_ P.p ⋙ (Δ_ P.h Q ⋙ Σ_ P.k Q) ⋙ Π_ Q.p ⋙ Σ_ Q.o  := by {
-  have : Δ_ P.h Q ⋙ Σ_ P.k Q ≅ Σ_ P.o ⋙ Δ_ Q.i := first_BCh_iso P Q hA'
-  apply isoWhiskerLeft
-  apply isoWhiskerLeft
-  apply isoWhiskerRight
+    Δ_ P.i ⋙ Π_ P.p ⋙ (Σ_ P.o ⋙ Δ_ Q.i) ⋙ Π_ Q.p ⋙ Σ_ Q.o ≅
+      Δ_ P.i ⋙ Π_ P.p ⋙ (Δ_ P.h Q ⋙ Σ_ P.k Q) ⋙ Π_ Q.p ⋙ Σ_ Q.o  := by {
+  apply isoWhiskerLeft _ <| isoWhiskerLeft _ <| isoWhiskerRight _ <| _
   exact (first_BCh_iso P Q hA').symm}
 
 instance CEp' : CartesianExponentiable (p' P Q) := sorry
@@ -224,15 +221,15 @@ instance CEp' : CartesianExponentiable (p' P Q) := sorry
 instance CEr : CartesianExponentiable (r P Q) := sorry
 
 def bciii_Iso (hpb : IsPullback (P.m Q) (r P Q) (P.p) (P.h Q)) :
-   IsIso (pushforwardBeckChevalleyNatTrans (P.m Q) (P.p) (r P Q) (P.h Q)
-    (sq_III_comm P Q) P.exp (P.CEr Q)) := by {
-    apply pushforwardBeckChevalleyNatTrans_of_IsPullback_is_iso
-    exact hpb}
+  IsIso (pushforwardBeckChevalleyNatTrans (P.m Q) (P.p) (r P Q) (P.h Q)
+    pullback.condition P.exp (P.CEr Q)) := by {
+  apply pushforwardBeckChevalleyNatTrans_of_IsPullback_is_iso
+  exact hpb}
 
 def BCiii (hpb : IsPullback (P.m Q) (r P Q) (P.p) (P.h Q)) :
-     Π_ (P.p) ⋙ Δ_ P.h Q ≅ Δ_ P.m Q ⋙ Π_ (r P Q) where
+    Π_ (P.p) ⋙ Δ_ P.h Q ≅ Δ_ P.m Q ⋙ Π_ (r P Q) where
   hom := (pushforwardBeckChevalleyNatTrans (P.m Q) (P.p) (r P Q) (P.h Q)
-    (sq_III_comm P Q) P.exp (P.CEr Q))
+    pullback.condition P.exp (P.CEr Q))
   inv := Classical.choose ((bciii_Iso P Q hpb).out)
   hom_inv_id := (Classical.choose_spec (bciii_Iso P Q hpb).out).left
   inv_hom_id := (Classical.choose_spec (bciii_Iso P Q hpb).out).right
@@ -240,36 +237,30 @@ def BCiii (hpb : IsPullback (P.m Q) (r P Q) (P.p) (P.h Q)) :
 instance : CartesianExponentiable (P.q Q) := sorry
 
 def half_of_3rd_step_distrib_law (hpb : IsPullback (P.m Q) (P.r Q) P.p (P.h Q)) :
-  Δ_ P.i ⋙ (Π_ P.p ⋙ Δ_ P.h Q) ⋙ (Δ_ P.ε Q ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o ≅
-  Δ_ P.i ⋙ (Δ_ P.m Q ⋙ Π_ (r P Q)) ⋙
-    (Δ_ P.ε Q ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o := by {
-  have : Π_ (P.p) ⋙ Δ_ P.h Q ≅ Δ_ P.m Q ⋙ Π_ (r P Q) := P.BCiii Q hpb
-  apply isoWhiskerLeft
-  apply isoWhiskerRight
+    Δ_ P.i ⋙ (Π_ P.p ⋙ Δ_ P.h Q) ⋙ (Δ_ P.ε Q ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o ≅
+    Δ_ P.i ⋙ (Δ_ P.m Q ⋙ Π_ (r P Q)) ⋙ (Δ_ P.ε Q ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o := by {
+  apply isoWhiskerLeft _ <| isoWhiskerRight _ <| _
   exact P.BCiii Q hpb}
 
 def bciv_Iso (hpb : IsPullback (P.n Q) (p' P Q) (r P Q) (P.ε Q)) :
-   IsIso (pushforwardBeckChevalleyNatTrans (P.n Q) (r P Q) (p' P Q)  (P.ε Q)
-    (sq_IV_comm P Q) (P.CEr Q) (P.CEp' Q)) := by {
+  IsIso (pushforwardBeckChevalleyNatTrans (P.n Q) (r P Q) (p' P Q)  (P.ε Q)
+    pullback.condition (P.CEr Q) (P.CEp' Q)) := by {
   apply pushforwardBeckChevalleyNatTrans_of_IsPullback_is_iso
   exact hpb}
 
 def BCiv (hpb : IsPullback (P.n Q) (p' P Q) (r P Q) (P.ε Q)) :
-  Π_ (r P Q) ⋙ Δ_ P.ε Q ≅ Δ_ P.n Q ⋙ Π_ (p' P Q) where
-  hom := (pushforwardBeckChevalleyNatTrans (P.n Q) (r P Q) (p' P Q)  (P.ε Q)
-    (sq_IV_comm P Q) (P.CEr Q) (P.CEp' Q))
-  inv := Classical.choose ((bciv_Iso P Q hpb).out)
+    Π_ (r P Q) ⋙ Δ_ P.ε Q ≅ Δ_ P.n Q ⋙ Π_ (p' P Q) where
+  hom := (pushforwardBeckChevalleyNatTrans (P.n Q) (r P Q) (p' P Q) (P.ε Q)
+    pullback.condition (P.CEr Q) (P.CEp' Q))
+  inv := Classical.choose (bciv_Iso P Q hpb).out
   hom_inv_id := (Classical.choose_spec (bciv_Iso P Q hpb).out).left
   inv_hom_id := (Classical.choose_spec (bciv_Iso P Q hpb).out).right
 
 def second_half__distrib_law
     (hpb' : IsPullback (P.n Q) (P.p' Q) (P.r Q) (P.ε Q)) :
-  Δ_ P.i ⋙ Δ_ P.m Q ⋙ (Π_ (r P Q) ⋙ Δ_ P.ε Q) ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o≅
+  Δ_ P.i ⋙ Δ_ P.m Q ⋙ (Π_ (r P Q) ⋙ Δ_ P.ε Q) ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o ≅
   Δ_ P.i ⋙ Δ_ P.m Q ⋙ (Δ_ P.n Q ⋙ Π_ (p' P Q)) ⋙ Π_ P.q Q ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o := by {
-  have : (Π_ (r P Q) ⋙ Δ_ P.ε Q) ≅ Δ_ P.n Q ⋙ Π_ (p' P Q) := BCiv P Q hpb'
-  apply isoWhiskerLeft
-  apply isoWhiskerLeft
-  apply isoWhiskerRight
+  apply isoWhiskerLeft _ <| isoWhiskerLeft _ <| isoWhiskerRight _ <| _
   exact BCiv P Q hpb'}
 
 instance : CartesianExponentiable (P.h Q) := sorry
@@ -305,17 +296,10 @@ def from_distrib_diagram_4_page_5 :
 
 end distrib_diagram
 
-def from_BC_iii (hpbIII : IsPullback (P.m Q) (P.r Q) P.p (P.h Q)) :
-  Π_ (P.p) ⋙ Δ_ P.h Q ≅ Δ_ P.m Q ⋙ Π_ (r P Q) := BCiii P Q hpbIII
-
-/-- Σv Πg Σk ∆h Πf ∆s ≅ Σv Σw Πq ∆ε ∆h Πf ∆s-/
 def second_step_distrib_law :
-  Δ_ P.i ⋙ Π_ P.p ⋙ Δ_ P.h Q ⋙ (Σ_ P.k Q ⋙ Π_ Q.p) ⋙ Σ_ Q.o ≅
-  Δ_ P.i ⋙ Π_ P.p ⋙ Δ_ P.h Q ⋙ (Δ_ P.ε Q ⋙ Π_ (q P Q) ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o := by {
-  apply isoWhiskerLeft
-  apply isoWhiskerLeft
-  apply isoWhiskerLeft
-  apply isoWhiskerRight
+    Δ_ P.i ⋙ Π_ P.p ⋙ Δ_ P.h Q ⋙ (Σ_ P.k Q ⋙ Π_ Q.p) ⋙ Σ_ Q.o ≅
+    Δ_ P.i ⋙ Π_ P.p ⋙ Δ_ P.h Q ⋙ (Δ_ P.ε Q ⋙ Π_ (q P Q) ⋙ Σ_ (P.w Q).hom) ⋙ Σ_ Q.o := by {
+  apply isoWhiskerLeft _ <| isoWhiskerLeft _ <| isoWhiskerLeft _ <| isoWhiskerRight _ <| _
   apply from_distrib_diagram_4_page_5}
 
 def comp.functor : P.functor ⋙ Q.functor ≅ (P.comp Q).functor := by {
@@ -332,22 +316,15 @@ def comp.functor : P.functor ⋙ Q.functor ≅ (P.comp Q).functor := by {
     sorry}
   unfold comp
   simp only [const_obj_obj]
-  change (Δ_ P.i ⋙ Δ_ P.m Q ⋙ Δ_ P.n Q) ⋙ (Π_ P.p' Q ⋙
-   Π_ P.q Q) ⋙ (Σ_ (P.w Q).hom ⋙ Σ_ Q.o) ≅ _
   have iso1 : (Δ_ P.i ⋙ Δ_ P.m Q ⋙ Δ_ P.n Q)
    ⋙ (Π_ P.p' Q ⋙ Π_ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o ≅
     (Δ_ P.i ⋙ Δ_ P.m Q ⋙ Δ_ P.n Q)
-   ⋙ Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o := by {
-    apply isoWhiskerRight
-    apply isoWhiskerRight
-    exact Iso.refl (Δ_ P.i)}
+   ⋙ Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o := by
+    apply isoWhiskerRight; exact Iso.refl _
   apply Iso.trans iso1
-  have iso2 : (Δ_ P.i ⋙ Δ_ P.m Q ⋙ Δ_ P.n Q)
-     ⋙ Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o ≅
-  Δ_ ((P.n Q ≫ P.m Q) ≫ P.i) ⋙
-    Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o := by {
-    apply isoWhiskerRight
-    exact hdelta2.symm}
+  have iso2 : (Δ_ P.i ⋙ Δ_ P.m Q ⋙ Δ_ P.n Q) ⋙ Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o ≅
+  Δ_ ((P.n Q ≫ P.m Q) ≫ P.i) ⋙ Π_ (P.p' Q ≫ P.q Q) ⋙ Σ_ (P.w Q).hom ⋙ Σ_ Q.o :=
+     isoWhiskerRight hdelta2.symm _
   apply Iso.trans iso2
   simp only [assoc]
   apply isoWhiskerLeft
